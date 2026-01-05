@@ -43,7 +43,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'dev' }}
+    environment: production
     needs: build
     steps:
       - name: '📥 Descargar artefacto del build'
