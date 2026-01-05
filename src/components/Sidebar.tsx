@@ -58,7 +58,7 @@ const Sidebar: React.FC = () => {
           ) : (
             // If logged out, show Login and Register buttons
             <>
-              <button className="btn btn-primary" data-bs-dismiss="offcanvas" onClick={() => handleNavLinkClick("/login")}>Iniciar sesión</button>
+              <button className="btn btn-primary" data-bs-dismiss="offcanvas" onClick={() => handleNavLinkClick("/")}>Iniciar sesión</button>
               <button className="btn btn-secondary" data-bs-dismiss="offcanvas" onClick={() => handleNavLinkClick("/register")}>Registrarse</button>
             </>
           )}
