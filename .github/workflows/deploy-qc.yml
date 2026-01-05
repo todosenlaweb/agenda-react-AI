@@ -1,0 +1,61 @@
+name: Deploy to QC
+
+on:
+  push:
+    branches:
+      - develop   # Trigger para el entorno de QC
+
+jobs:
+  build-and-deploy-qc:
+    runs-on: ubuntu-latest
+    environment: dev # Usa el entorno y los secretos de 'dev'
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Setup Node.js v18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 📄 Create .env file for QC
+        run: echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env
+
+      - name: 🔨 Build the application
+        run: npm run build
+
+      - name: 🗜️ Compress the content of /dist folder
+        run: |
+          cd dist
+          zip -r ../dist.zip .
+
+      - name: 🚀 Upload to server via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "dist.zip"
+          target: "/home/${{ secrets.SSH_USER }}"
+
+      - name: 🔧 Unzip and Deploy on Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            APP_DIR=${{ secrets.APP_DIR }}
+            mkdir -p "$APP_DIR"
+            echo "Cleaning old files from $APP_DIR..."
+            rm -rf "${APP_DIR:?}/*"
+            echo "Unzipping new build..."
+            unzip -o "/home/${{ secrets.SSH_USER }}/dist.zip" -d "$APP_DIR"
+            echo "Cleaning up..."
+            rm "/home/${{ secrets.SSH_USER }}/dist.zip"
+            echo "✅ QC Deployment finished!"
