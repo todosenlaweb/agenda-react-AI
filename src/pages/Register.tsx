@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL; // Assuming VITE_API_BASE_URL is defined in your environment
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Register: React.FC = () => {
   const [name, setName] = useState('');
@@ -10,6 +11,7 @@ const Register: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,52 +31,33 @@ const Register: React.FC = () => {
     })
       .then(async response => {
         const data = await response.json();
-        if (response.status === 201) { // Specifically check for 201 status
-          console.log('Registration successful:', data);
+        if (response.status === 201) {
           setModalTitle('Registration Successful');
-          setModalMessage(data.message || 'User registered successfully.');
-          console.log('Registration successful:', data);
-          setModalTitle('Registration Successful');
-          setModalMessage(data.message || 'User registered successfully.');
-        } else { // Status is not 2xx
-          console.error('Registration failed:', data);
+          setModalMessage(data.message || 'User registered successfully. You will be redirected to login.');
+        } else {
           setModalTitle('Registration Failed');
-          // Attempt to show validation errors or a general message
           if (data.errors) {
             const errorMessages = Object.entries(data.errors)
-              .map(([field, messages]) => {
-                // @ts-ignore
-                return `${field}: ${(messages as string[]).join(', ')}`;
-              })
-              .join('\n'); // Join errors with newlines for better readability
-
+              .map(([, messages]) => (messages as string[]).join(', '))
+              .join('\n');
             setModalMessage(errorMessages);
           } else {
             setModalMessage(data.message || 'An error occurred during registration.');
           }
-          // Reset inputs on failure
-          setName('');
-          setEmail('');
-          setPassword('');
-          setPasswordConfirmation('');
         }
-        setIsModalOpen(true); // Show modal in both success and failure cases
+        setIsModalOpen(true);
       })
       .catch(error => {
-        console.error('Registration failed:', error);
+        console.error('Registration fetch error:', error);
         setModalTitle('Registration Failed');
         setModalMessage('Could not connect to the server.');
-        setIsModalOpen(true); // Show modal on fetch error
-        setName(''); // Reset inputs on failure
-        setEmail('');
-        setPassword('');
-        setPasswordConfirmation('');
+        setIsModalOpen(true);
       });
   };
 
   const closeModal = () => {
-    // Inputs are reset only on login failure within handleSubmit
     setIsModalOpen(false);
+    navigate('/'); // Redirect to login page on modal close
   };
 
   return (
@@ -128,7 +111,6 @@ const Register: React.FC = () => {
         <button type="submit" className="btn btn-success">Registrarse</button>
       </form>
 
-      {/* Registration Result Modal */}
       {isModalOpen && (
         <div className="modal show d-block" tabIndex={-1} role="dialog" onClick={closeModal}>
           <div className="modal-dialog" role="document" onClick={(e) => e.stopPropagation()}>
@@ -138,7 +120,8 @@ const Register: React.FC = () => {
                 <button type="button" className="btn-close" aria-label="Close" onClick={closeModal}></button>
               </div>
               <div className="modal-body">
-                <p>{modalMessage}</p>
+                {/* Use pre-wrap to respect newline characters in the error message */}
+                <p style={{ whiteSpace: 'pre-wrap' }}>{modalMessage}</p>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={closeModal}>
