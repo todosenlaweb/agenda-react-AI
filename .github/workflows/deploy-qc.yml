@@ -1,6 +1,7 @@
 name: Deploy to QC
 
 on:
+  workflow_dispatch:    
   push:
     branches:
       - develop   # Trigger para el entorno de QC
