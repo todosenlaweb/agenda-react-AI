@@ -1,4 +1,4 @@
-name: Deploy React App
+name: Deploy React App Production
 
 on:
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    needs: build
+    needs: export-and-deploy
     steps:
       - name: '📥 Descargar artefacto del build'
         uses: actions/download-artifact@v4
