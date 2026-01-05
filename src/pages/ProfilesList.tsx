@@ -141,11 +141,17 @@ const ProfilesList: React.FC = () => {
                 <div key={profile.id} className="col-6 col-md-4 col-lg-3 col-xl-3 mb-4" style={{ cursor: 'pointer' }}>
                   <Link to={`/profile/${profile.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div className="card">
+<<<<<<< HEAD:src/ProfilesList.tsx
+                      <div className="card-img-overlay d-flex flex-column justify-content-end" style={{ backgroundImage: `url(${profile.media && profile.media.length > 0 ? `${apiBaseUrl}/${profile.media[0].file_path}` : 'https://via.placeholder.com/400x200?text=No+Image'})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '200px' }}>
+                        <h5 className="card-title text-white">{profile.nombre}</h5>
+                        <p className="card-text text-white"><small>{profile.mapa}</small></p>
+=======
                       <div className="card-img-overlay d-flex flex-column justify-content-end" style={{ backgroundImage: `url(${profile.media && profile.media.length > 0 ? `${apiBaseUrl}/${profile.media[0].file_path}` : 'https://via.placeholder.com/400x200?text=No+Image'})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '200px', paddingLeft: '0px', paddingRight: '0px', paddingBottom: '0px' }}>
                         <div style={{ backgroundImage: 'linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7))', paddingLeft: '20px', paddingRight: '20px', paddingBottom: '10px' }}>
                           <h5 className="card-title text-white">{profile.nombre}</h5>
                           <p className="card-text text-white"><small>{profile.mapa}</small></p>
                         </div>
+>>>>>>> 986eb62f673e954091108e810d0d2a98cc9e21d2:src/pages/ProfilesList.tsx
                       </div>
                     </div>
                   </Link>

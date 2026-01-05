@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  agenda-react-app:
+    build: .
+    ports:
+      - "5173:5173"
+    volumes:
+      # Montar el código fuente para hot reload durante desarrollo
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    container_name: agenda-react-container
+    restart: unless-stopped
+

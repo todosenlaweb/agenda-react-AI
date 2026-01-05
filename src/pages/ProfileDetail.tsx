@@ -172,6 +172,25 @@ const ProfileDetail: React.FC = () => {
             <div className="col">
               <h3>Galeria</h3>
               <div className="row">
+<<<<<<< HEAD:src/ProfileDetail.tsx
+                {profile.media && profile.media.length > 0 ? (profile.media.map((mediaItem, index) => (
+                  <div
+                    key={index}
+                    className="col-6 col-md-4 col-lg-3 mb-4"
+                  >
+                    <img
+                      src={`${apiBaseUrl}/${mediaItem.file_path}`}
+                      alt={`Gallery item ${index + 1}`}
+                      className="img-fluid gallery-thumbnail" // Make image responsive and add a class for styling
+                      style={{ cursor: 'pointer' }} // Keep cursor style
+                      // Removed inline hover styles to move to CSS class for better organization
+                      onClick={() => openModal(`${apiBaseUrl}/${mediaItem.file_path}`)}
+                    // Moved hover effect styling to CSS class .gallery-thumbnail:hover
+                    // Hover effect now scales the image directly
+                    />
+                  </div>
+                ))
+=======
                 {profile.media && profile.media.length > 0 ? (
                   profile.media.map((mediaItem, index) => (
                     <div
@@ -201,6 +220,7 @@ const ProfileDetail: React.FC = () => {
                       ) : null} {/* Handle other media types if needed */}
                     </div>
                   ))
+>>>>>>> 986eb62f673e954091108e810d0d2a98cc9e21d2:src/pages/ProfileDetail.tsx
                 ) : (
                   <p>No hay elementos en la galería.</p>
                 )}
