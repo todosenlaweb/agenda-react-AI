@@ -1,7 +1,10 @@
-name: Deploy React App Production
+name: Deploy React App QC
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -16,17 +19,32 @@ jobs:
       - name: 📥 Checkout del código
         uses: actions/checkout@v3
 
-      - name: 📦 Instalar dependencias
-        run: npm install
-
       - name: 📄 Crear archivo .env desde los secretos
         run: |
           echo "VITE_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }}" >> .env
           echo "VITE_MEDIA_BASE_URL=${{ secrets.REACT_APP_MEDIA_BASE_URL }}" >> .env
 
-      - name: ⚙️ Construir la aplicación
-        run: npm run build
+      - name: \'📦 Instalar y Construir (con logging)\'
+        run: |
+          {
+            echo "📦 Instalando dependencias..."
+            npm install
+            
+            echo "⚙️ Construyendo la aplicación..."
+            npm run build
+
+          } > build.log 2>&1 || {
+            echo "❌ Error durante la instalación o construcción. Revisa el log."
+            cat build.log
+            exit 1
+          }
         
+      - name: \'📤 Guardar log de construcción\'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+
       - name: 🗜️ Comprimir el build
         run: zip -r build.zip ./dist
 
@@ -43,13 +61,13 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: dev
     needs: export-and-deploy
     steps:
       - name: '📥 Descargar artefacto del build'
         uses: actions/download-artifact@v4
         with:
-          name: react-build-${{ github.run_id }}
+          name: react-build
           path: .
 
       - name: '🚀 Subir artefacto al servidor por SCP'
@@ -71,8 +89,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             APP_DIR="/home/${{ secrets.SSH_USER }}/${{ secrets.APP_DIR }}"
-            LOG_FILE="$APP_DIR/deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
-            
+            LOG_FILE="/home/${{ secrets.SSH_USER }}/front_pdn_deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
             {
               echo "🚀 Iniciando despliegue en $(date)"
               TEMP_ZIP="$APP_DIR/build.zip"

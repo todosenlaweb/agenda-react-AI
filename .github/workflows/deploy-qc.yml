@@ -89,7 +89,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             APP_DIR="/home/${{ secrets.SSH_USER }}/${{ secrets.APP_DIR }}"
-            LOG_FILE="/home/${{ secrets.SSH_USER }}/front_deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
+            LOG_FILE="/home/${{ secrets.SSH_USER }}/front_qc_deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
             {
               echo "🚀 Iniciando despliegue en $(date)"
               TEMP_ZIP="$APP_DIR/build.zip"
