@@ -33,11 +33,6 @@ const ModelAdditionalDataForm: React.FC = () => {
     });
   };
 
-  // Function to return selected services
-  const getSelectedServices = () => {
-    return selectedServices;
-  };
-
   const validateStep = (step: number) => {
     let errors: { [key: number]: string | null } = { ...formErrors };
     let isValid = true;

@@ -1,11 +1,9 @@
 // Note: This component uses Font Awesome icons. Ensure that the Font Awesome library is included in your project's HTML file (e.g., using a CDN link in index.html) for the icons to display correctly.
 // Example: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Import useParams
+import { useParams } from 'react-router-dom';
 
-// Note: This component uses Font Awesome icons. Ensure that the Font Awesome library is included in your project's HTML file (e.g., using a CDN link in index.html) for the icons to display correctly.)
 interface Profile {
   id: number;
   nombre: string;
@@ -18,17 +16,16 @@ interface Profile {
   tags: {
     tipo: string;
     valor: string;
-    id?: number; // Optional id for tags
+    id?: number;
   }[];
-  media: { file_path: string, type: string }[]; // Added 'tipo' to media interface
-  // Add other properties as they exist in your API response
-  contacto?: string; // Assuming you might have a contact field
+  media: { file_path: string, type: string }[];
+  contacto?: string;
 }
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const ProfileDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Get the ID from the URL
+  const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,7 +34,6 @@ const ProfileDetail: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // Fetch data using the ID from the URL
         const response = await fetch(`${apiBaseUrl}/api/people/${id}`);
         const data = await response.json();
         setProfile(data);
@@ -48,10 +44,10 @@ const ProfileDetail: React.FC = () => {
       }
     };
 
-    if (id) { // Only fetch if ID is available
+    if (id) {
       fetchProfile();
     }
-  }, [id]); // Add id to dependency array
+  }, [id]);
 
   const openModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -72,7 +68,7 @@ const ProfileDetail: React.FC = () => {
           <div className="row">
             <div className="col text-center">
               <h2 className="text-center">{profile.nombre}</h2>
-              {profile.contacto && <p>Contacto: {profile.contacto}</p>} {/* Display contact if it exists */}
+              {profile.contacto && <p>Contacto: {profile.contacto}</p>}
               {profile.whatsapp && (
                 <a href={`https://wa.me/${profile.whatsapp}`} className="btn btn-success m-1 d-inline-flex align-items-center" target="_blank" rel="noopener noreferrer">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-whatsapp" viewBox="0 0 16 16">
@@ -87,17 +83,13 @@ const ProfileDetail: React.FC = () => {
                   </svg>
                 </a>
               )}
-
             </div>
           </div>
           {/* Section 2: Photo and Tags */}
           <div className="row mt-4">
             <div className="col-md-4">
               {/* Profile Photo */}
-              {profile.media &&
-                profile.media.length > 0 &&
-                profile.media[0] &&
-                profile.media[0].file_path ? (
+              {profile.media && profile.media.length > 0 && profile.media[0] && profile.media[0].file_path ? (
                 <img
                   src={`${apiBaseUrl}/${profile.media[0].file_path}`}
                   alt={profile.nombre}
@@ -105,14 +97,12 @@ const ProfileDetail: React.FC = () => {
                 />
               ) : (
                 <p>No photo available.</p>
-              )
-              }
+              )}
             </div>
             <div className="col-md-8">
               <div className='col-md-12'>
                 {profile.tags && profile.tags.length > 0 && (
                   <div className="d-flex flex-wrap mb-3">
-                    {' '}
                     <p>
                       {profile.tags
                         .filter(
@@ -128,8 +118,7 @@ const ProfileDetail: React.FC = () => {
                         ).map((tag, index) => (
                           <span
                             key={index}
-
-                            className="badge bg-secondary me-1 mb-1" // Bootstrap badge classes
+                            className="badge bg-secondary me-1 mb-1"
                           >
                             {tag.tipo}:{tag.valor}
                           </span>
@@ -139,7 +128,6 @@ const ProfileDetail: React.FC = () => {
                 )}
               </div>
               <div className='col-md-12'>
-                {/* Section for Description */}
                 {profile.about && (
                   <>
                     <div className="row mt-3">
@@ -150,8 +138,6 @@ const ProfileDetail: React.FC = () => {
                     </div>
                   </>
                 )}
-
-                {/* Section for Horario Disponible */}
                 {profile.horario && (
                   <div className="row mt-3">
                     <div className="col">
@@ -163,64 +149,39 @@ const ProfileDetail: React.FC = () => {
               </div>
             </div>
           </div>
-          {' '}
 
-          <hr className="my-4" /> {/* Separator */}
+          <hr className="my-4" />
 
           {/* Section 3: Gallery */}
           <div className="row">
             <div className="col">
               <h3>Galeria</h3>
               <div className="row">
-<<<<<<< HEAD:src/ProfileDetail.tsx
-                {profile.media && profile.media.length > 0 ? (profile.media.map((mediaItem, index) => (
-                  <div
-                    key={index}
-                    className="col-6 col-md-4 col-lg-3 mb-4"
-                  >
-                    <img
-                      src={`${apiBaseUrl}/${mediaItem.file_path}`}
-                      alt={`Gallery item ${index + 1}`}
-                      className="img-fluid gallery-thumbnail" // Make image responsive and add a class for styling
-                      style={{ cursor: 'pointer' }} // Keep cursor style
-                      // Removed inline hover styles to move to CSS class for better organization
-                      onClick={() => openModal(`${apiBaseUrl}/${mediaItem.file_path}`)}
-                    // Moved hover effect styling to CSS class .gallery-thumbnail:hover
-                    // Hover effect now scales the image directly
-                    />
-                  </div>
-                ))
-=======
                 {profile.media && profile.media.length > 0 ? (
                   profile.media.map((mediaItem, index) => (
                     <div
                       key={index}
                       className="col-6 col-md-4 col-lg-3 mb-4"
-                      style={{ cursor: 'pointer' }} // Keep cursor style on the container
-                      onClick={() => openModal(`${apiBaseUrl}/${mediaItem.file_path}`)} // Open modal with the file path
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => openModal(`${apiBaseUrl}/${mediaItem.file_path}`)}
                     >
                       {mediaItem.type === 'image' ? (
                         <img
                           src={`${apiBaseUrl}/${mediaItem.file_path}`}
                           alt={`Gallery item ${index + 1}`}
-                          className="img-fluid gallery-thumbnail" // Make image responsive and add a class for styling
-                        // Removed inline hover styles to move to CSS class for better organization
-                        // Moved hover effect styling to CSS class .gallery-thumbnail:hover
-                        // Hover effect now scales the image directly
+                          className="img-fluid gallery-thumbnail"
                         />
                       ) : mediaItem.type === 'video' ? (
                         <video
                           src={`${apiBaseUrl}/${mediaItem.file_path}`}
-                          controls // Add controls for video playback
-                          className="img-fluid gallery-thumbnail" // Use the same class for styling
-                        // You might want to add a poster attribute for a preview image
+                          controls
+                          className="img-fluid gallery-thumbnail"
                         >
                           Your browser does not support the video tag.
                         </video>
-                      ) : null} {/* Handle other media types if needed */}
+                      ) : null}
                     </div>
                   ))
->>>>>>> 986eb62f673e954091108e810d0d2a98cc9e21d2:src/pages/ProfileDetail.tsx
                 ) : (
                   <p>No hay elementos en la galería.</p>
                 )}
@@ -228,17 +189,14 @@ const ProfileDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Modal for expanded image */}
+          {/* Modal for expanded media */}
           {isModalOpen && (
             <div className="modal-overlay" onClick={closeModal} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1050, padding: '20px' }}>
-              {/* Added padding to prevent image from touching the edges */}
               <div className="modal-content" style={{ overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px auto', width: 'auto', height: 'auto' }}>
-                {/* Check the file extension to determine if it's an image or video */}
                 {selectedImage && selectedImage.match(/\.(jpeg|jpg|gif|png)$/) ? (
                   <img src={selectedImage} alt="Expanded" className="modal-image" style={{
                     objectFit: 'contain', maxHeight: '100vh', maxWidth: '100%'
-                  }}
-                  />
+                  }}/>
                 ) : selectedImage && selectedImage.match(/\.(mp4|webm|ogg)$/) ? (
                   <video src={selectedImage} controls className="modal-video" style={{ objectFit: 'contain', maxHeight: '100vh', maxWidth: '100%' }}>
                     Your browser does not support the video tag.
@@ -248,15 +206,14 @@ const ProfileDetail: React.FC = () => {
             </div>
           )}
 
-          <hr className="my-4" /> {/* Separator */}
+          <hr className="my-4" />
 
           {/* Section 4: Servicios Ofrecidos */}
           <div className="row">
             <div className="col">
               <h3 className="text-center">Servicios Ofrecidos</h3>
-              {profile.tags && profile.tags.length > 0 ? ( // Added a check for profile.tags
+              {profile.tags && profile.tags.length > 0 ? (
                 <div>
-                  {/* Servicios section */}
                   {profile.tags.filter(tag => tag.tipo === 'Adicionales').length > 0 && (
                     <>
                       <h3>Adicionales:</h3>
@@ -272,7 +229,6 @@ const ProfileDetail: React.FC = () => {
                     </>
                   )}
 
-                  {/* Virtuales section */}
                   {profile.tags.filter(tag => tag.tipo === 'Virtuales').length > 0 && (
                     <>
                       <h4>Virtuales:</h4>
@@ -288,10 +244,9 @@ const ProfileDetail: React.FC = () => {
                     </>
                   )}
 
-                  {/* Metodos de Pago section */}
-                  {profile.tags.filter(tag => tag.tipo === 'Métodos de Pago').length > 0 && ( // Corrected tag type
+                  {profile.tags.filter(tag => tag.tipo === 'Métodos de Pago').length > 0 && (
                     <>
-                      <h4>Métodos de Pago:</h4> {/* Added colon for consistency */}
+                      <h4>Métodos de Pago:</h4>
                       <div className="d-flex flex-wrap justify-content-center">
                         {profile.tags
                           .filter(tag => tag.tipo === 'Métodos de Pago')
@@ -304,8 +259,7 @@ const ProfileDetail: React.FC = () => {
                     </>
                   )}
 
-                  {/* Fantasias section */}
-                  {profile.tags.filter(tag => tag.tipo === 'Fantasias').length > 0 && ( // Added check
+                  {profile.tags.filter(tag => tag.tipo === 'Fantasias').length > 0 && (
                     <>
                       <h4>Fantasias:</h4>
                       <div className="d-flex flex-wrap justify-content-center">
@@ -320,7 +274,6 @@ const ProfileDetail: React.FC = () => {
                     </>
                   )}
 
-                  {/* Masajes section */}
                   {profile.tags.filter(tag => tag.tipo === 'Masajes').length > 0 && (
                     <>
                       <h4>Masajes:</h4>
@@ -336,7 +289,6 @@ const ProfileDetail: React.FC = () => {
                     </>
                   )}
 
-                  {/* Oral section */}
                   {profile.tags.filter(tag => tag.tipo === 'Oral').length > 0 && (
                     <>
                       <h4>Oral:</h4>
@@ -358,15 +310,14 @@ const ProfileDetail: React.FC = () => {
             </div>
           </div>
 
-          <hr className="my-4" /> {/* Separator */}
+          <hr className="my-4" />
 
-
-        </div> // Closing div for all profile sections
-      ) : ( // If profile is null or undefined (not found)
-        <p>Profile not found.</p> // Display "Profile not found" message
-      )
-      }
-    </div >
-  )
+        </div>
+      ) : (
+        <p>Profile not found.</p>
+      )}
+    </div>
+  );
 };
+
 export default ProfileDetail;
