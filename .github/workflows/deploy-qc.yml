@@ -1,62 +1,82 @@
-name: Deploy to QC
+name: Deploy React App
 
 on:
-  workflow_dispatch:    
-  push:
+  workflow_dispatch:
+  pull_request:
     branches:
-      - develop   # Trigger para el entorno de QC
+      - develop
 
 jobs:
-  build-and-deploy-qc:
+  export-and-deploy:
     runs-on: ubuntu-latest
-    environment: dev # Usa el entorno y los secretos de 'dev'
+    environment: dev
+    outputs:
+      artifact_url: ${{ steps.generate_artifact.outputs.artifact_url }}
     steps:
-      - name: 📥 Checkout repository
+      - name: 📥 Checkout del código
         uses: actions/checkout@v3
 
-      - name: ⚙️ Setup Node.js v18
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: 📦 Install dependencies
+      - name: 📦 Instalar dependencias
         run: npm install
 
-      - name: 📄 Create .env file for QC
-        run: echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env
-
-      - name: 🔨 Build the application
-        run: npm run build
-
-      - name: 🗜️ Compress the content of /dist folder
+      - name: 📄 Crear archivo .env desde los secretos
         run: |
-          cd dist
-          zip -r ../dist.zip .
+          echo "VITE_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }}" >> .env
+          echo "VITE_MEDIA_BASE_URL=${{ secrets.REACT_APP_MEDIA_BASE_URL }}" >> .env
 
-      - name: 🚀 Upload to server via SCP
-        uses: appleboy/scp-action@master
+      - name: ⚙️ Construir la aplicación
+        run: npm run build
+        
+      - name: 🗜️ Comprimir el build
+        run: zip -r build.zip ./dist
+
+      - name: 📤 Guardar el ZIP como artefacto
+        uses: actions/upload-artifact@v4
+        id: upload_artifact
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          source: "dist.zip"
-          target: "/home/${{ secrets.SSH_USER }}"
+          name: react-build
+          path: build.zip
 
-      - name: 🔧 Unzip and Deploy on Server
+      - name: Generate Artifact URL
+        id: generate_artifact
+        run: echo "artifact_url=https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ steps.upload_artifact.outputs.artifact-id }}/zip" >> $GITHUB_OUTPUT
+
+  deploy: 
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    needs: export-and-deploy
+    steps:
+      - name: 🔧 Conectar por SSH y desplegar
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
-            APP_DIR=${{ secrets.APP_DIR }}
+            APP_DIR="/home/${{ secrets.SSH_USER }}/${{ secrets.APP_DIR }}"
+            ARTIFACT_URL="${{ needs.export-and-deploy.outputs.artifact_url }}"
+            TEMP_ZIP="${APP_DIR}/build.zip"
+
+            echo "Creando o limpiando el directorio de la aplicación..."
             mkdir -p "$APP_DIR"
-            echo "Cleaning old files from $APP_DIR..."
             rm -rf "${APP_DIR:?}/*"
-            echo "Unzipping new build..."
-            unzip -o "/home/${{ secrets.SSH_USER }}/dist.zip" -d "$APP_DIR"
-            echo "Cleaning up..."
-            rm "/home/${{ secrets.SSH_USER }}/dist.zip"
-            echo "✅ QC Deployment finished!"
+
+            echo "Descargando artefacto desde GitHub..."
+            curl -L -o "$TEMP_ZIP" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "$ARTIFACT_URL"
+
+            if [ ! -f "$TEMP_ZIP" ] || [ ! -s "$TEMP_ZIP" ]; then
+              echo "Error: La descarga del artefacto falló o el archivo está vacío."
+              exit 1
+            fi
+
+            echo "Extrayendo artefacto en el directorio de la aplicación..."
+            unzip -o "$TEMP_ZIP" -d "$APP_DIR"
+
+            echo "Limpiando el archivo ZIP temporal..."
+            rm -f "$TEMP_ZIP"
+            
+            echo "¡Despliegue finalizado con éxito!"
