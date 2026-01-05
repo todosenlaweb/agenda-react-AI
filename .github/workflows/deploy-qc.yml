@@ -60,26 +60,31 @@ jobs:
             APP_DIR="/home/${{ secrets.SSH_USER }}/${{ secrets.APP_DIR }}"
             ARTIFACT_URL="${{ needs.export-and-deploy.outputs.artifact_url }}"
             TEMP_ZIP="${APP_DIR}/build.zip"
+            LOG_FILE="$APP_DIR/deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
+            {
+              echo "Creando o limpiando el directorio de la aplicación..."
+              mkdir -p "$APP_DIR"
+              rm -rf "${APP_DIR:?}/*"
 
-            echo "Creando o limpiando el directorio de la aplicación..."
-            mkdir -p "$APP_DIR"
-            rm -rf "${APP_DIR:?}/*"
+              echo "Descargando artefacto desde GitHub..."
+              curl -L -o "$TEMP_ZIP" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                "$ARTIFACT_URL"
 
-            echo "Descargando artefacto desde GitHub..."
-            curl -L -o "$TEMP_ZIP" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "$ARTIFACT_URL"
+              if [ ! -f "$TEMP_ZIP" ] || [ ! -s "$TEMP_ZIP" ]; then
+                echo "Error: La descarga del artefacto falló o el archivo está vacío."
+                exit 1
+              fi
 
-            if [ ! -f "$TEMP_ZIP" ] || [ ! -s "$TEMP_ZIP" ]; then
-              echo "Error: La descarga del artefacto falló o el archivo está vacío."
+              echo "Extrayendo artefacto en el directorio de la aplicación..."
+              unzip -o "$TEMP_ZIP" -d "$APP_DIR"
+
+              echo "Limpiando el archivo ZIP temporal..."
+              rm -f "$TEMP_ZIP"
+              
+              echo "¡Despliegue finalizado con éxito!"
+            } > $LOG_FILE 2>&1 || {
+              echo "❌ An error occurred during deployment. See $LOG_FILE for details."
               exit 1
-            fi
-
-            echo "Extrayendo artefacto en el directorio de la aplicación..."
-            unzip -o "$TEMP_ZIP" -d "$APP_DIR"
-
-            echo "Limpiando el archivo ZIP temporal..."
-            rm -f "$TEMP_ZIP"
-            
-            echo "¡Despliegue finalizado con éxito!"
+            }
