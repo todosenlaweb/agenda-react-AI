@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react'; // Import useEffect
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios
+import { useAuth } from '../context/AuthContext';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,59 +13,51 @@ const Login: React.FC = () => {
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
-  const { login, profile } = useAuth(); // Get login function and profile from context
-  const navigate = useNavigate(); // Get navigate function
+  const { login, profile } = useAuth();
+  const navigate = useNavigate();
 
-  // Use useEffect to navigate AFTER the profile state is updated in AuthContext
   useEffect(() => {
-    if (profile === 'Admin') {
-      navigate('/admin/dashboard');
-    } else if (profile === 'Model') {
-      navigate('/model/dashboard');
-    } else if (profile === 'Assist') {
-      navigate('/assist/dashboard');
+    if (profile) { // Check if profile is not null
+      if (profile === 'Admin') {
+        navigate('/admin/dashboard');
+      } else if (profile === 'Model') {
+        navigate('/model/dashboard');
+      } else if (profile === 'Assist') {
+        navigate('/assist/dashboard');
+      }
     }
-    // Add other profile checks as needed
-  }, [profile, navigate]); // Depend on profile and navigate
+  }, [profile, navigate]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const apiUrl = `${apiBaseUrl}/api/login`;
 
-    fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
+    // Use axios instead of fetch
+    axios.post(apiUrl, {
+      email: email,
+      password: password,
     })
-      .then(async response => {
-        const data = await response.json();
-        if (response.ok) {
-          console.log('Login successful:', data);
-          // Call the login function from AuthContext to update state and sessionStorage
-          login(data.token, data.profile);
-          // Navigation will now be handled by the useEffect hook
-        } else {
-          console.error('Login failed:', data);
-          setModalTitle('Login Failed');
-          setModalMessage(data.message || 'An error occurred during login.');
-          setIsModalOpen(true);
-          setEmail(''); // Reset inputs on failure
-          setPassword('');
-        }
-      })
-      .catch(error => {
-        console.error('Login failed:', error);
+    .then(response => {
+      // On success (status 200-299)
+      console.log('Login successful:', response.data);
+      login(response.data.token, response.data.profile);
+      // Navigation will be handled by the useEffect hook
+    })
+    .catch(error => {
+      // On error
+      if (error.response) {
+        console.error('Login failed:', error.response.data);
+        setModalTitle('Login Failed');
+        setModalMessage(error.response.data.message || 'An error occurred during login.');
+      } else {
+        console.error('Login failed:', error.message);
         setModalTitle('Login Failed');
         setModalMessage('Could not connect to the server.');
-        setIsModalOpen(true);
-        setEmail(''); // Reset inputs on failure
-        setPassword('');
-      });
+      }
+      setIsModalOpen(true);
+      setEmail(''); // Reset inputs on failure
+      setPassword('');
+    });
   };
 
   const closeModal = () => {
@@ -72,7 +66,6 @@ const Login: React.FC = () => {
 
   return (
     <div className="container mt-5">
-      {/* ... rest of your login form ... */}
       <h2 className="text-center mb-4">Iniciar sesión</h2>
       <form onSubmit={handleSubmit} className="col-md-6 offset-md-3">
         <div className="mb-3">
@@ -100,11 +93,9 @@ const Login: React.FC = () => {
         <button type="submit" className="btn btn-primary">Iniciar sesión</button>
       </form>
 
-
-      {/* Login Result Modal */}
       {isModalOpen && (
-        <div className="modal show d-block" tabIndex={-1} role="dialog" onClick={closeModal}>
-          <div className="modal-dialog" role="document" onClick={(e) => e.stopPropagation()}>
+        <div className="modal show d-block" tabIndex={-1} role="dialog">
+          <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">{modalTitle}</h5>
