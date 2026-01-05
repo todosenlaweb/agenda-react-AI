@@ -1,6 +1,6 @@
 import React from 'react';
 import DashboardLayout from '../layouts/DashboardLayout'; // Import DashboardLayout
-import UserManagement from '../components/UserManagement'; // Import UserManagement component
+import AllPeople from '../components/AllPeople'; // Import AllPeople component
 
 const AdminDashboard: React.FC = () => {
   // Define sidebar options specifically for the Admin Dashboard
@@ -16,8 +16,8 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <DashboardLayout sidebarOptions={adminSidebarOptions}> {/* Pass admin options to DashboardLayout */}
-      {/* Replace placeholder content with UserManagement component */}
-      <UserManagement />
+      {/* Replace placeholder content with AllPeople component */}
+      <AllPeople />
     </DashboardLayout>
   );
 };
